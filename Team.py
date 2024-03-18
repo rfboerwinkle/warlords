@@ -1,12 +1,9 @@
 import pyglet
-import pymunk
 
 class Team:
-  def __init__(self, teamIndex, tileSpriteSheet, homeSpriteSheet, shieldBody, homeBody):
+  def __init__(self, teamIndex, tileSpriteSheet, homeSpriteSheet):
     self.dead = False
     self.teamIndex = teamIndex
-    self.shieldBody = shieldBody
-    self.homeBody = homeBody
     self.shieldAngle = 0
     # [-1,1]
     # -1 is against the vertical wall (left or right, depending)
@@ -19,24 +16,24 @@ class Team:
     self.hShield = tileSpriteSheet.get_region(8*8, teamIndex*8, 8, 8)
     self.vShield = tileSpriteSheet.get_region(9*8, teamIndex*8, 8, 8)
 
-    self.homeX = 0
-    self.homeY = 0
+    self.homeX = 24
+    self.homeY = 24
 
-    self.leftX = 0
-    self.rightX = 80
-    self.leftY = 80
-    self.rightY = 0
+    self.leftX = 4
+    self.rightX = 84
+    self.leftY = 84
+    self.rightY = 4
     # I know these look a little funky... look at self.shieldAngle, might make a
     # bit more sense.
 
     if teamIndex == 1 or teamIndex == 2:
-      self.homeX = 208-self.homeX
-      self.leftX = 248-self.leftX
-      self.rightX = 248-self.rightX
+      self.homeX = 256-self.homeX
+      self.leftX = 256-self.leftX
+      self.rightX = 256-self.rightX
     if teamIndex == 2 or teamIndex == 3:
-      self.homeY = 192-self.homeY
-      self.leftY = 232-self.leftY
-      self.rightY = 232-self.rightY
+      self.homeY = 240-self.homeY
+      self.leftY = 240-self.leftY
+      self.rightY = 240-self.rightY
 
     self.setInterface(None, homeSpriteSheet)
 
@@ -64,18 +61,17 @@ class Team:
     else:
       self.home = homeSpriteSheet.get_region(0, self.teamIndex*48, 48, 48)
 
-  def step(self):
+  def step(self, dt):
     if self.interface != None:
       self.shieldAngle = self.interface[0]()
-    self.shieldBody.position = self.getShield()
 
   def blit(self):
-    self.home.blit(self.homeX, self.homeY, 0)
+    self.home.blit(self.homeX-24, self.homeY-24, 0)
+    x,y = self.getShield()
     if self.shieldAngle > 0:
-      self.vShield.blit(*self.getShield(), 0)
+      self.vShield.blit(x-4, y-4, 0)
     else:
-      self.hShield.blit(*self.getShield(), 0)
+      self.hShield.blit(x-4, y-4, 0)
 
   def kill(self): # real
-    self.homeBody = None
     self.dead = True
