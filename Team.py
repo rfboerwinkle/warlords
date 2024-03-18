@@ -1,9 +1,13 @@
 import pyglet
+import pymunk
 
 class Team:
-  def __init__(self, teamIndex, tileSpriteSheet, homeSpriteSheet):
+  def __init__(self, teamIndex, tileSpriteSheet, homeSpriteSheet, shieldBody, homeBody):
+    self.dead = False
     self.teamIndex = teamIndex
-    self.shieldPos = 0
+    self.shieldBody = shieldBody
+    self.homeBody = homeBody
+    self.shieldAngle = 0
     # [-1,1]
     # -1 is against the vertical wall (left or right, depending)
     # 0 is at the corner
@@ -22,7 +26,7 @@ class Team:
     self.rightX = 80
     self.leftY = 80
     self.rightY = 0
-    # I know these look a little funky... look at self.shieldPos, might make a
+    # I know these look a little funky... look at self.shieldAngle, might make a
     # bit more sense.
 
     if teamIndex == 1 or teamIndex == 2:
@@ -40,7 +44,7 @@ class Team:
   # True: vertical or "right"
   # False: horizontal or "left"
   def getAngle(self):
-    return self.shieldPos > 0
+    return self.shieldAngle > 0
 
   def getButton(self):
     if self.interface != None:
@@ -49,9 +53,9 @@ class Team:
 
   def getShield(self):
     if self.getAngle():
-      return (self.rightX, self.leftY + (self.rightY-self.leftY)*self.shieldPos)
+      return (self.rightX, self.leftY + (self.rightY-self.leftY)*self.shieldAngle)
     else:
-      return (self.leftX + (self.rightX-self.leftX)*(1+self.shieldPos), self.leftY)
+      return (self.leftX + (self.rightX-self.leftX)*(1+self.shieldAngle), self.leftY)
 
   def setInterface(self, interface, homeSpriteSheet):
     self.interface = interface
@@ -62,12 +66,16 @@ class Team:
 
   def step(self):
     if self.interface != None:
-      self.shieldPos = self.interface[0]()
-      return
+      self.shieldAngle = self.interface[0]()
+    self.shieldBody.position = self.getShield()
 
   def blit(self):
     self.home.blit(self.homeX, self.homeY, 0)
-    if self.shieldPos > 0:
+    if self.shieldAngle > 0:
       self.vShield.blit(*self.getShield(), 0)
     else:
       self.hShield.blit(*self.getShield(), 0)
+
+  def kill(self): # real
+    self.homeBody = None
+    self.dead = True

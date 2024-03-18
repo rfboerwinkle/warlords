@@ -9,6 +9,7 @@ class Game:
   MISC_COLLISION = 0
   BALL_COLLISION = 1
   TILE_COLLISION = 2
+  HOME_COLLISION = 3
 
   def __init__(self, tileSprites, homeSprites, demo=False):
     self.tileSprites = tileSprites
@@ -29,16 +30,31 @@ class Game:
     self.populateTiles()
     self.populateTeams()
 
+    # borders
+    body = pymunk.Body(body_type=pymunk.Body.STATIC)
+    body.position = (-4,-4) # because the rest of the objects are from the bottom left
+    bottom = pymunk.Poly(body, ((-20,0),(276,0),(-20,-20),(276,-20)))
+    bottom.elasticity = 0.9
+    top = pymunk.Poly(body, ((-20,240),(276,240),(-20,260),(276,260)))
+    top.elasticity = 0.9
+    left = pymunk.Poly(body, ((0,-20),(0,260),(-20,-20),(-20,260)))
+    left.elasticity = 0.9
+    right = pymunk.Poly(body, ((256,-20),(256,260),(276,-20),(276,260)))
+    right.elasticity = 0.9
+    self.space.add(body, bottom, top, left, right)
+
+    # ball
     self.ball = pymunk.Body(10,100)
     self.ball.position = (124, 116)
     shape = pymunk.Circle(self.ball, 4, (0,0))
     shape.friction = 0.0
-    shape.elasticity = 1.2
+    shape.elasticity = 1
     shape.collision_type = self.BALL_COLLISION
-    self.ball.apply_impulse_at_local_point((200,200))
+    self.ball.apply_impulse_at_local_point((500,500))
     self.space.add(self.ball, shape)
 
     self.space.add_collision_handler(self.BALL_COLLISION, self.TILE_COLLISION).post_solve = self.breakTile
+    self.space.add_collision_handler(self.BALL_COLLISION, self.HOME_COLLISION).post_solve = self.breakHome
     # self.space.add_default_collision_handler().pre_solve = self.a
   def a(self,a,b,c):
     print(a,b,c)
@@ -83,21 +99,38 @@ class Game:
           body = pymunk.Body(body_type=pymunk.Body.STATIC)
           body.position = (tile[0]*8, tile[1]*8)
           shape = pymunk.Poly(body, ((-4,4),(4,4),(4,-4),(-4,-4)))
-          shape.elasticity = 0.9
+          shape.elasticity = 0.4
           shape.collision_type = self.TILE_COLLISION
           self.space.add(body, shape)
           self.tiles.append(Sprite(pic, body, shape))
 
   def populateTeams(self):
-    self.teams = [Team(i, self.tileSprites, self.homeSprites) for i in range(4)]
+    self.teams = []
+    for i in range(4):
+      shieldBody = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
+      shape = pymunk.Poly(shieldBody, ((-4,4),(4,4),(4,-4),(-4,-4)))
+      shape.elasticity = 1.04
+      self.space.add(shieldBody, shape)
+      homeBody = pymunk.Body(body_type=pymunk.Body.STATIC)
+      homeBody.position = ((0,0), (208,0), (208,292), (0,292))[i]
+      shape = pymunk.Poly(homeBody, ((-4,-4),(44,-4),(44,44),(-4,44)))
+      shape.elasticity = 0.4
+      self.space.add(homeBody, shape)
+      self.teams.append(Team(i, self.tileSprites, self.homeSprites, shieldBody, homeBody))
 
-  def breakTile(self,arbiter, space, data):
+  def breakTile(self, arbiter, space, data):
     ball,tile = arbiter.shapes
-    print("goooooood")
-    print(ball, tile)
     for i,sprite in enumerate(self.tiles):
       if sprite.shape is tile:
         space.remove(sprite.shape, sprite.body)
         self.tiles.pop(i)
         break
-    # return False
+
+  def breakHome(self, arbiter, space, data):
+    ball,home = arbiter.shapes
+    home = home.body
+    for team in self.teams:
+      if team.homeBody == home:
+        team.kill()
+        self.space.remove(home, *home.shapes)
+        break
