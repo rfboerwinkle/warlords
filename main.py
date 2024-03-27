@@ -18,7 +18,7 @@ Window = pyglet.window.Window(256, 240)
 ASSETS = os.path.join(os.path.dirname(__file__), "assets")
 HOME_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "HomeSprites.png"))
 TILE_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "TileSprites.png"))
-BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "B A L L.png"))
+BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "BallSprites.png"))
 
 TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET)
 

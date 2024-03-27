@@ -1,9 +1,9 @@
 import pyglet
+import pymunk
 
 class Tile:
-  def __init__(self, pic, x, y):
+  def __init__(self, pic, body):
     self.pic = pic
-    self.x = x
-    self.y = y
+    self.body = body
   def blit(self):
-    self.pic.blit(self.x-4, self.y-4, 0)
+    self.pic.blit(self.body.position[0]-4, self.body.position[1]-4, 0)
