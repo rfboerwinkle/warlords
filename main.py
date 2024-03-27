@@ -22,10 +22,10 @@ BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "BallSprites.png"))
 
 TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET)
 
-# joysticks = pyglet.input.get_joysticks()
-# joystick = joysticks[0]
-# joystick.open()
-# TheGame.teams[0].setInterface((lambda:joystick.x, lambda:False), HOME_SPRITE_SHEET)
+joysticks = pyglet.input.get_joysticks()
+joystick = joysticks[0]
+joystick.open()
+TheGame.teams[0].setInterface((lambda:joystick.x, lambda:False))
 
 @Window.event
 def on_draw():

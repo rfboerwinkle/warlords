@@ -5,6 +5,9 @@ from Team import *
 from Tile import *
 from Ball import *
 
+BOUNCE_ELASTICITY = 1.3
+FLAT_ELASTICITY = 0.4
+
 class Game:
 
   MISC_COLLISION = 0
@@ -30,23 +33,24 @@ class Game:
       pass
 
   def reset(self):
+    self.startDelay = 4
     self.space = pymunk.Space()
 
     self.populateTeams()
     self.populateTiles()
     self.balls = []
-    self.addBall((124, 116), (-500,-500)) # this is temporary
 
     # borders
+    WIDTH = 100
     body = pymunk.Body(body_type=pymunk.Body.STATIC)
-    bottom = pymunk.Poly(body, ((-20,0),(276,0),(-20,-20),(276,-20)))
-    bottom.elasticity = 0.9
-    top = pymunk.Poly(body, ((-20,240),(276,240),(-20,260),(276,260)))
-    top.elasticity = 0.9
-    left = pymunk.Poly(body, ((0,-20),(0,260),(-20,-20),(-20,260)))
-    left.elasticity = 0.9
-    right = pymunk.Poly(body, ((256,-20),(256,260),(276,-20),(276,260)))
-    right.elasticity = 0.9
+    bottom = pymunk.Poly(body, ((-WIDTH,0),(256+WIDTH,0),(-WIDTH,-WIDTH),(256+WIDTH,-WIDTH)))
+    bottom.elasticity = BOUNCE_ELASTICITY
+    top = pymunk.Poly(body, ((-WIDTH,240),(256+WIDTH,240),(-WIDTH,240+WIDTH),(256+WIDTH,240+WIDTH)))
+    top.elasticity = BOUNCE_ELASTICITY
+    left = pymunk.Poly(body, ((0,-WIDTH),(0,240+WIDTH),(-WIDTH,-WIDTH),(-WIDTH,240+WIDTH)))
+    left.elasticity = BOUNCE_ELASTICITY
+    right = pymunk.Poly(body, ((256,-WIDTH),(256,240+WIDTH),(256+WIDTH,-WIDTH),(256+WIDTH,240+WIDTH)))
+    right.elasticity = BOUNCE_ELASTICITY
     self.space.add(body, bottom, top, left, right)
 
     self.space.add_collision_handler(self.BALL_COLLISION, self.TILE_COLLISION).post_solve = self.breakTile
@@ -58,6 +62,11 @@ class Game:
     for ball in self.balls:
       ball.step(dt)
     self.space.step(dt)
+    if self.startDelay != 0:
+      self.startDelay -= dt
+    if self.startDelay < 0:
+      self.startDelay = 0
+      self.addBall((124, 116), (-1000,-1000))
 
   # ball argument is temp
   def blit(self):
@@ -93,7 +102,7 @@ class Game:
           body = pymunk.Body(body_type=pymunk.Body.STATIC)
           body.position = (tile[0]*8+4, tile[1]*8+4)
           shape = pymunk.Poly(body, ((-4,4),(4,4),(4,-4),(-4,-4)))
-          shape.elasticity = 0.4
+          shape.elasticity = FLAT_ELASTICITY
           shape.collision_type = self.TILE_COLLISION
           self.space.add(body, shape)
           self.tiles.append(Tile(pic, body))
@@ -103,13 +112,13 @@ class Game:
     for i in range(4):
       shieldBody = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
       shape = pymunk.Poly(shieldBody, ((-4,4),(4,4),(4,-4),(-4,-4)))
-      shape.elasticity = 1.04
+      shape.elasticity = BOUNCE_ELASTICITY
       # shape.collision_type = self.SHIELD_COLLISION
       self.space.add(shieldBody, shape)
       homeBody = pymunk.Body(body_type=pymunk.Body.STATIC)
       homeBody.position = ((24,24), (232,24), (232,216), (24,216))[i]
       shape = pymunk.Poly(homeBody, ((-24,-24),(24,-24),(24,24),(-24,24)))
-      shape.elasticity = 0.4
+      shape.elasticity = BOUNCE_ELASTICITY
       shape.collision_type = self.HOME_COLLISION
       self.space.add(homeBody, shape)
       self.teams.append(Team(i, self.tileSprites, self.homeSprites, shieldBody, homeBody))

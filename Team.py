@@ -12,7 +12,7 @@ class Team:
     # -1 is against the vertical wall (left or right, depending)
     # 0 is at the corner
     # 1 is against the horizontal wall
-    #
+
     # I will call -1 "left" and +1 "right", even though it is really CCW and CW
     # (and also only for team 0)
 

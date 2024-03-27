@@ -15,3 +15,9 @@ class Ball:
   def step(self, dt):
     self.cycle += 1
     self.cycle %= 4
+
+    if self.body.velocity.get_length_sqrd() < 5000:
+      self.body.velocity = self.body.velocity.scale_to_length(70.71067811865476)
+
+    if self.body.velocity.get_length_sqrd() > 200000:
+      self.body.velocity = self.body.velocity.scale_to_length(447.21359549995793)
