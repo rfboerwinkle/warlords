@@ -24,6 +24,7 @@ class Game:
     self.populateTeams()
     self.populateTiles()
     self.balls = []
+    self.balls.append(Ball())
 
   def step(self, dt):
     for team in self.teams:
