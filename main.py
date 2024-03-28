@@ -42,20 +42,18 @@ joysticks = pyglet.input.get_joysticks()
 #   print(dir(joystick))
 #   TheGame.teams[i*2].setInterface((lambda:joystick.x, lambda:False))
 #   TheGame.teams[i*2+1].setInterface((lambda:joystick.z, lambda:False))
-if len(joysticks) == 2:
+if len(joysticks) >= 1:
   joysticks[0].open()
-  joysticks[1].open()
   TheGame.teams[0].joystick = joysticks[0]
   TheGame.teams[0].ai = False
   TheGame.teams[1].joystick = joysticks[0]
   TheGame.teams[1].ai = False
+if len(joysticks) >= 2:
+  joysticks[1].open()
   TheGame.teams[2].joystick = joysticks[1]
   TheGame.teams[2].ai = False
   TheGame.teams[3].joystick = joysticks[1]
   TheGame.teams[3].ai = False
-  print(joysticks[0].buttons)
-else:
-  print("BINDING NO CONTROLS!!!")
 
 @Window.event
 def on_draw():

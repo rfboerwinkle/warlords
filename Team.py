@@ -65,12 +65,20 @@ class Team:
       for i,pic in enumerate(self.explodePics):
         pic.anchor_y = 24
 
+  def rawControls(self):
+    angle = 0
+    pressed = False
+    if self.joystick:
+      angle = self.joystick.x if self.teamIndex%2 else self.joystick.y
+      pressed = self.joystick.buttons[0] if self.teamIndex%2 else self.joystick.buttons[1]
+    return angle,pressed
+
   def updateControls(self):
+    self.shieldAngle, self.shieldPressed = self.rawControls()
     if self.ai:
-      pass # idk, do something
-    else:
-      if self.joystick:
-        self.shieldAngle = self.joystick.x if self.teamIndex%2 else self.joystick.y
+      # idk, do something
+      self.shieldAngle = 0.5
+      self.shieldPressed = False
 
   # Returns the angle of the shield
   # True: vertical or "right"
@@ -96,9 +104,9 @@ class Team:
     if self.deadCounter == -1:
       glsetup.blitSetup()
       if self.ai:
-        self.playerHome.blit(self.homeX-24, self.homeY-24)
-      else:
         self.aiHome.blit(self.homeX-24, self.homeY-24)
+      else:
+        self.playerHome.blit(self.homeX-24, self.homeY-24)
       x,y = self.getShield()
       glsetup.blitSetup()
       if self.shieldAngle > 0:
@@ -112,9 +120,9 @@ class Team:
       if frame <= 3:
         glsetup.blitSetup()
         if self.ai:
-          self.playerHome.blit(self.homeX-24, self.homeY-24)
-        else:
           self.aiHome.blit(self.homeX-24, self.homeY-24)
+        else:
+          self.playerHome.blit(self.homeX-24, self.homeY-24)
 
       explodeFrame = (0,1,2,3,2,1,0,-1)[frame%8]
       if explodeFrame != -1:

@@ -16,6 +16,11 @@ class Game:
   HOME_COLLISION = 3
   SHIELD_COLLISION = 4
 
+  IDLE = "idle"
+  JOINING = "joining"
+  GAMEPLAY = "gameplay"
+  DONE = "done"
+
   def __init__(self, tileSprites, homeSprites, ballSprites, demo=False):
     self.tileSprites = tileSprites
     self.homeSprites = homeSprites
