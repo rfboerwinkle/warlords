@@ -54,7 +54,7 @@ class Game:
     self.space.add(body, bottom, top, left, right)
 
     self.space.add_collision_handler(self.BALL_COLLISION, self.TILE_COLLISION).post_solve = self.breakTile
-    self.space.add_collision_handler(self.BALL_COLLISION, self.HOME_COLLISION).post_solve = self.breakHome
+    self.space.add_collision_handler(self.BALL_COLLISION, self.HOME_COLLISION).pre_solve = self.breakHome
 
   def step(self, dt):
     for team in self.teams:
@@ -66,9 +66,8 @@ class Game:
       self.startDelay -= dt
     if self.startDelay < 0:
       self.startDelay = 0
-      self.addBall((124, 116), (-1000,-1000))
+      self.addBall((124, 116), pymunk.vec2d.Vec2d(-200, -200))
 
-  # ball argument is temp
   def blit(self):
     for tile in self.tiles:
       tile.blit()
@@ -123,14 +122,14 @@ class Game:
       self.space.add(homeBody, shape)
       self.teams.append(Team(i, self.tileSprites, self.homeSprites, shieldBody, homeBody))
 
-  def addBall(self, pos, impulse):
+  def addBall(self, pos, vel):
     ball = pymunk.Body(10,100)
     ball.position = pos
+    ball.velocity = vel
     shape = pymunk.Circle(ball, 4, (0,0))
     shape.friction = 0.0
     shape.elasticity = 1
     shape.collision_type = self.BALL_COLLISION
-    ball.apply_impulse_at_local_point(impulse)
     self.space.add(ball, shape)
     self.balls.append(Ball(self.ballSprites, ball))
 
@@ -144,10 +143,16 @@ class Game:
         break
 
   def breakHome(self, arbiter, space, data):
-    _,targetShape = arbiter.shapes
+    targetBall,targetShape = arbiter.shapes
+    for ball in self.balls:
+      if ball.body == targetBall.body:
+        break
     targetBody = targetShape.body
-    for team in self.teams:
+    for i,team in enumerate(self.teams):
       if team.homeBody == targetBody:
-        self.space.remove(targetShape, targetBody, team.shieldBody, team.shieldBody.shapes[0])
+        self.space.remove(targetShape, targetBody, team.shieldBody)
+        self.space.remove(*(x for x in team.shieldBody.shapes))
+        self.addBall(ball.body.position, ball.body.velocity)
         team.kill()
         break
+    return True

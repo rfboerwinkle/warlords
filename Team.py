@@ -1,12 +1,18 @@
 import pyglet
 import pymunk
+import glsetup
 
 class Team:
   def __init__(self, teamIndex, tileSprites, homeSprites, shieldBody, homeBody):
-    self.dead = False
+    self.deadCounter = -1
     self.teamIndex = teamIndex
+    self.ai = True
+
     self.shieldBody = shieldBody
     self.homeBody = homeBody
+
+    self.joystick = None
+    self.shieldPressed = False
     self.shieldAngle = 0
     # [-1,1]
     # -1 is against the vertical wall (left or right, depending)
@@ -22,6 +28,13 @@ class Team:
     self.playerHome = homeSprites.get_region(48, self.teamIndex*48, 48, 48)
     self.aiHome = homeSprites.get_region(0, self.teamIndex*48, 48, 48)
 
+    self.explodePics = (
+      homeSprites.get_region(80, 216, 16, 16),
+      homeSprites.get_region(72, 192, 24, 24),
+      homeSprites.get_region(40, 192, 32, 32),
+      homeSprites.get_region(0, 192, 40, 40),
+    )
+
     self.homeX = 24
     self.homeY = 24
 
@@ -36,12 +49,28 @@ class Team:
       self.homeX = 256-self.homeX
       self.leftX = 256-self.leftX
       self.rightX = 256-self.rightX
+      for i,pic in enumerate(self.explodePics):
+          pic.anchor_x = i*8 - 8
+    else:
+      for i,pic in enumerate(self.explodePics):
+          pic.anchor_x = 24
+
     if teamIndex == 2 or teamIndex == 3:
       self.homeY = 240-self.homeY
       self.leftY = 240-self.leftY
       self.rightY = 240-self.rightY
+      for i,pic in enumerate(self.explodePics):
+        pic.anchor_y = i*8 - 8
+    else:
+      for i,pic in enumerate(self.explodePics):
+        pic.anchor_y = 24
 
-    self.setInterface(None)
+  def updateControls(self):
+    if self.ai:
+      pass # idk, do something
+    else:
+      if self.joystick:
+        self.shieldAngle = self.joystick.x if self.teamIndex%2 else self.joystick.y
 
   # Returns the angle of the shield
   # True: vertical or "right"
@@ -49,35 +78,48 @@ class Team:
   def getAngle(self):
     return self.shieldAngle > 0
 
-  def getButton(self):
-    if self.interface != None:
-      return self.interface[1]()
-    return False
-
   def getShield(self):
     if self.getAngle():
       return (self.rightX, self.leftY + (self.rightY-self.leftY)*self.shieldAngle)
     else:
       return (self.leftX + (self.rightX-self.leftX)*(1+self.shieldAngle), self.leftY)
 
-  def setInterface(self, interface):
-    self.interface = interface
-
   def step(self, dt):
-    if self.interface != None:
-      self.shieldAngle = self.interface[0]()
+    self.updateControls()
     self.shieldBody.position = self.getShield()
 
+    if self.deadCounter != -1 and self.deadCounter != 24*4+1:
+      self.deadCounter += 1
+
   def blit(self):
-    if self.interface:
-      self.playerHome.blit(self.homeX-24, self.homeY-24, 0)
-    else:
-      self.aiHome.blit(self.homeX-24, self.homeY-24, 0)
-    x,y = self.getShield()
-    if self.shieldAngle > 0:
-      self.vShield.blit(x-4, y-4, 0)
-    else:
-      self.hShield.blit(x-4, y-4, 0)
+    # alive
+    if self.deadCounter == -1:
+      glsetup.blitSetup()
+      if self.ai:
+        self.playerHome.blit(self.homeX-24, self.homeY-24)
+      else:
+        self.aiHome.blit(self.homeX-24, self.homeY-24)
+      x,y = self.getShield()
+      glsetup.blitSetup()
+      if self.shieldAngle > 0:
+        self.vShield.blit(x-4, y-4)
+      else:
+        self.hShield.blit(x-4, y-4)
+
+    # dying
+    elif self.deadCounter <= 24*4:
+      frame = self.deadCounter//4
+      if frame <= 3:
+        glsetup.blitSetup()
+        if self.ai:
+          self.playerHome.blit(self.homeX-24, self.homeY-24)
+        else:
+          self.aiHome.blit(self.homeX-24, self.homeY-24)
+
+      explodeFrame = (0,1,2,3,2,1,0,-1)[frame%8]
+      if explodeFrame != -1:
+        glsetup.blitSetup()
+        self.explodePics[explodeFrame].blit(self.homeX, self.homeY)
 
   def kill(self): # real
-    self.dead = True
+    self.deadCounter = 0
