@@ -22,11 +22,12 @@ class Game:
   GAMEPLAY = "gameplay"
   DONE = "done"
 
-  def __init__(self, tileSprites, homeSprites, ballSprites, logoSprites, charSprites):
+  def __init__(self, tileSprites, homeSprites, ballSprites, logoSprites, charSprites, sounds):
     self.tileSprites = tileSprites
     self.homeSprites = homeSprites
     self.ballSprites = ballSprites
     self.logoSprites = logoSprites
+    self.sounds = sounds
     def setAnchor(x):
       for elem in x:
         elem.anchor_x = 4
@@ -142,6 +143,8 @@ class Game:
     elif self.state == self.JOINING:
       self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92))
       self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92), True)
+      if (600-self.counter)%60 == 0:
+        self.sounds["boom"].play()
       self.blitText(str((600-self.counter)//60), (130,60))
       self.blitText(str((600-self.counter)//60), (130,60), True)
     elif self.state == self.GAMEPLAY:
@@ -190,6 +193,7 @@ class Game:
       self.addBall((124, 116), pymunk.vec2d.Vec2d(-200, -200))
 
     elif newState == self.DONE:
+      self.sounds["fanfare"].play()
       self.counter = 0
       self.clearBalls()
 
@@ -260,6 +264,7 @@ class Game:
         team.ai = True
 
   def breakTile(self, arbiter, space, data):
+    self.sounds["triangle"].play()
     _,targetShape = arbiter.shapes
     targetBody = targetShape.body
     for i,tile in enumerate(self.tiles):
@@ -269,6 +274,7 @@ class Game:
         break
 
   def breakHome(self, arbiter, space, data):
+    self.sounds["explosion"].play()
     targetBall,targetShape = arbiter.shapes
     for ball in self.balls:
       if ball.body == targetBall.body:

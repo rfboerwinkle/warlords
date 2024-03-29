@@ -43,8 +43,17 @@ TILE_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "TileSprites.png"))
 BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "BallSprites.png"))
 LOGO_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "LogoSprites.png"))
 CHAR_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "CharSprites.png"))
+SOUNDS = {
+  "boom": pyglet.media.load(os.path.join(ASSETS, "boom.wav")),
+  "explosion": pyglet.media.load(os.path.join(ASSETS, "explosion.wav")),
+  "fanfare": pyglet.media.load(os.path.join(ASSETS, "fanfare.wav")),
+  "hiss": pyglet.media.load(os.path.join(ASSETS, "hiss.wav")),
+  "hit": pyglet.media.load(os.path.join(ASSETS, "hit.wav")),
+  "slide": pyglet.media.load(os.path.join(ASSETS, "slide.wav")),
+  "triangle": pyglet.media.load(os.path.join(ASSETS, "triangle.wav"))
+}
 
-TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET, LOGO_SPRITE_SHEET, CHAR_SPRITE_SHEET)
+TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET, LOGO_SPRITE_SHEET, CHAR_SPRITE_SHEET, SOUNDS)
 
 joysticks = pyglet.input.get_joysticks()
 # for i,joystick in enumerate(joysticks[:2]):
