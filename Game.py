@@ -22,7 +22,7 @@ class Game:
   GAMEPLAY = "gameplay"
   DONE = "done"
 
-  def __init__(self, tileSprites, homeSprites, ballSprites, logoSprites, charSprites, sounds):
+  def __init__(self, tileSprites, homeSprites, ballSprites, logoSprites, charSprites, dragonSprites, sounds):
     self.tileSprites = tileSprites
     self.homeSprites = homeSprites
     self.ballSprites = ballSprites
@@ -109,7 +109,10 @@ class Game:
       if self.counter >= 10*60:
         self.stateTransition(self.GAMEPLAY)
     elif self.state == self.GAMEPLAY:
-      self.counter %= 25 # spawn ball
+      if self.counter > 60*60:
+        self.counter = 0
+        # this will be normalized to the minimum speed
+        self.addBall((128, 120), pymunk.vec2d.Vec2d(-1, -1))
       playersLeft = 0
       aisLeft = 0
       for team in self.teams:
@@ -249,7 +252,6 @@ class Game:
 
   def clearBalls(self):
     for ball in self.balls:
-      self.space.remove(ball.body)
       self.space.remove(ball.body)
       self.space.remove(*(x for x in ball.body.shapes))
     self.balls = []

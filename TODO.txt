@@ -1,19 +1,22 @@
 ball holding penalty
 more balls
-one way shields
 dragon
 ai
-sound effects
+one way shields
 restarting only allows non-winner to join
 
 fix speed
+make ball holding penalty persist after let go of ball
+ball holding penalty get where it is horizontal / vertical
+finish ound effects
 last man standing blinks until new game start if it's human
 pre-game start screen
 points
 high scores
 game modes
 "GAME OVER" text real length
-better tiny balls (textures might be flipped wrong)
+fireball is round at the edge of the screen
+better ball penalty (textures might be flipped wrong)
 good fireball accent colors
 maybe fix fireball tail[0]
 make readme

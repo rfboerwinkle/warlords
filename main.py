@@ -42,7 +42,8 @@ HOME_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "HomeSprites.png"))
 TILE_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "TileSprites.png"))
 BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "BallSprites.png"))
 LOGO_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "LogoSprites.png"))
-CHAR_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "CharSprites.png"))
+CHARACTER_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "CharacterSprites.png"))
+DRAGON_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "DragonSprites.png"))
 SOUNDS = {
   "boom": pyglet.media.load(os.path.join(ASSETS, "boom.wav")),
   "explosion": pyglet.media.load(os.path.join(ASSETS, "explosion.wav")),
@@ -53,7 +54,7 @@ SOUNDS = {
   "triangle": pyglet.media.load(os.path.join(ASSETS, "triangle.wav"))
 }
 
-TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET, LOGO_SPRITE_SHEET, CHAR_SPRITE_SHEET, SOUNDS)
+TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET, LOGO_SPRITE_SHEET, CHARACTER_SPRITE_SHEET, DRAGON_SPRITE_SHEET, SOUNDS)
 
 joysticks = pyglet.input.get_joysticks()
 # for i,joystick in enumerate(joysticks[:2]):
