@@ -94,6 +94,7 @@ class Ball:
     space.remove(*(x for x in self.body.shapes))
 
   def getReleased(self):
+    self.sounds["slide"].play()
     self.grabbed[1].add(self.body)
     self.grabbed[1].add(*(x for x in self.grabbed[2]))
     if self.grabbed[0].teamIndex == 0:
