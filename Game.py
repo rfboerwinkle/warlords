@@ -246,7 +246,7 @@ class Game:
     shape.elasticity = 1
     shape.collision_type = self.BALL_COLLISION
     self.space.add(ball, shape)
-    self.balls.append(Ball(self.ballSprites, ball))
+    self.balls.append(Ball(self.ballSprites, self.sounds, ball))
 
   def clearBalls(self):
     for ball in self.balls:
