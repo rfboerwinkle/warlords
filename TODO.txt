@@ -1,8 +1,10 @@
-holding onto the ball
+ball holding penalty
+more balls
 one way shields
 dragon
 ai
 sound effects
+restarting only allows non-winner to join
 
 fix speed
 last man standing blinks until new game start if it's human

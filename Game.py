@@ -73,6 +73,8 @@ class Game:
 
     self.space.add_collision_handler(self.BALL_COLLISION, self.TILE_COLLISION).post_solve = self.breakTile
     self.space.add_collision_handler(self.BALL_COLLISION, self.HOME_COLLISION).pre_solve = self.breakHome
+    self.space.add_collision_handler(self.BALL_COLLISION, self.SHIELD_COLLISION).begin = self.shieldCollide
+    self.space.add_collision_handler(self.BALL_COLLISION, self.BALL_COLLISION).begin = lambda *x : False
 
   def resetPhysics(self):
     self.clearBalls()
@@ -244,6 +246,7 @@ class Game:
   def clearBalls(self):
     for ball in self.balls:
       self.space.remove(ball.body)
+      self.space.remove(ball.body)
       self.space.remove(*(x for x in ball.body.shapes))
     self.balls = []
 
@@ -260,7 +263,11 @@ class Game:
         team.ai = True
 
   def breakTile(self, arbiter, space, data):
-    _,targetShape = arbiter.shapes
+    targetBall,targetShape = arbiter.shapes
+    for ball in self.balls:
+      if ball.body == targetBall.body:
+        ball.spinning = False
+        break
     targetBody = targetShape.body
     for i,tile in enumerate(self.tiles):
       if tile.body is targetBody:
@@ -281,6 +288,20 @@ class Game:
         break
     return True
 
+  def shieldCollide(self, arbiter, space, data):
+    targetBall, targetShape = arbiter.shapes
+    for ball in self.balls:
+      if ball.body == targetBall.body:
+        break
+    targetBody = targetShape.body
+    for team in self.teams:
+      if team.shieldBody == targetBody:
+        if team.shieldPressed:
+          ball.getGrabbed(team, self.space)
+          return False
+        break
+    return True
+
   def killTeam(self, i, peaceful=False):
     team = self.teams[i]
     self.space.remove(team.homeBody, team.shieldBody)
@@ -292,7 +313,7 @@ class Game:
     shieldBody = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
     shape = pymunk.Poly(shieldBody, ((-4,4),(4,4),(4,-4),(-4,-4)))
     shape.elasticity = BOUNCE_ELASTICITY
-    # shape.collision_type = self.SHIELD_COLLISION
+    shape.collision_type = self.SHIELD_COLLISION
     self.space.add(shieldBody, shape)
     homeBody = pymunk.Body(body_type=pymunk.Body.STATIC)
     homeBody.position = ((24,24), (232,24), (232,216), (24,216))[i]
