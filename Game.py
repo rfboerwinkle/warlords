@@ -1,5 +1,6 @@
 import pyglet
 import pymunk
+import glsetup
 
 from Team import *
 from Tile import *
@@ -21,31 +22,43 @@ class Game:
   GAMEPLAY = "gameplay"
   DONE = "done"
 
-  def __init__(self, tileSprites, homeSprites, ballSprites, demo=False):
+  def __init__(self, tileSprites, homeSprites, ballSprites, logoSprites, charSprites):
     self.tileSprites = tileSprites
     self.homeSprites = homeSprites
     self.ballSprites = ballSprites
+    self.logoSprites = logoSprites
+    def setAnchor(x):
+      for elem in x:
+        elem.anchor_x = 4
+        elem.anchor_y = 4
+    self.charSprites = tuple(charSprites.get_region(i*8, 8, 8, 8) for i in range(26))
+    setAnchor(self.charSprites)
+    self.charSpritesFlipped = tuple(charSprites.get_texture().get_transform(True,True).get_region(i*8, 8, 8, 8) for i in range(26))
+    setAnchor(self.charSpritesFlipped)
+    self.numbSprites = tuple(charSprites.get_region(i*8, 0, 8, 8) for i in range(10))
+    setAnchor(self.numbSprites)
+    self.numbSpritesFlipped = tuple(charSprites.get_texture().get_transform(True,True).get_region(i*8, 0, 8, 8) for i in range(10))
+    setAnchor(self.numbSpritesFlipped)
     self.teams = []
     self.tiles = []
     self.balls = []
     self.space = None
+    self.playerMode = 1 # number of players at start
 
-    self.reset()
-
-    if demo:
-      pass
-    else:
-      pass
-
-  def reset(self):
-    self.startDelay = 4
-    self.space = pymunk.Space()
+    self.state = self.IDLE
+    self.counter = 0 # this is used for a lot of things, depending on state
+    # IDLE: text flashing
+    # JOINING: countdown
+    # GAMEPLAY: new ball spawn
+    # DONE: text flashing
+    self.initPhysics()
+    self.resetPhysics()
 
     self.populateTeams()
-    self.populateTiles()
-    self.balls = []
 
-    # borders
+  def initPhysics(self):
+    self.space = pymunk.space.Space()
+
     WIDTH = 100
     body = pymunk.Body(body_type=pymunk.Body.STATIC)
     bottom = pymunk.Poly(body, ((-WIDTH,0),(256+WIDTH,0),(-WIDTH,-WIDTH),(256+WIDTH,-WIDTH)))
@@ -61,25 +74,126 @@ class Game:
     self.space.add_collision_handler(self.BALL_COLLISION, self.TILE_COLLISION).post_solve = self.breakTile
     self.space.add_collision_handler(self.BALL_COLLISION, self.HOME_COLLISION).pre_solve = self.breakHome
 
+  def resetPhysics(self):
+    self.clearBalls()
+    self.clearTiles()
+    self.clearTeams()
+
+    if len(self.space.bodies) > 1:
+      print("uh oh! bodies left!!!", self.space.bodies)
+    if len(self.space.shapes) > 4:
+      print("uh oh! shapes left!!!", self.space.shapes)
+
+    self.populateTiles()
+
   def step(self, dt):
     for team in self.teams:
       team.step(dt)
     for ball in self.balls:
       ball.step(dt)
+
+    if self.state == self.IDLE or self.state == self.JOINING:
+      for i,team in enumerate(self.teams):
+        if team.rawControls()[1] and team.ai:
+          team.ai = False
+          self.birthTeam(i)
+          self.stateTransition(self.JOINING)
+
+    self.counter += 1
+    if self.state == self.IDLE:
+      self.counter %= 128
+    elif self.state == self.JOINING:
+      if self.counter >= 10*60:
+        self.stateTransition(self.GAMEPLAY)
+    elif self.state == self.GAMEPLAY:
+      self.counter %= 25 # spawn ball
+      playersLeft = 0
+      aisLeft = 0
+      for team in self.teams:
+        if not team.isDead():
+          if team.ai:
+            aisLeft += 1
+          else:
+            playersLeft += 1
+      if self.playerMode == 1:
+        if playersLeft == 0 or aisLeft == 0:
+          self.stateTransition(self.DONE)
+      else:
+        if playersLeft == 0:
+          self.stateTransition(self.DONE)
+        elif playersLeft == 1 and aisLeft == 0:
+          self.stateTransition(self.DONE)
+    elif self.state == self.DONE:
+      if self.counter > 256:
+        self.stateTransition(self.IDLE)
     self.space.step(dt)
-    if self.startDelay != 0:
-      self.startDelay -= dt
-    if self.startDelay < 0:
-      self.startDelay = 0
-      self.addBall((124, 116), pymunk.vec2d.Vec2d(-200, -200))
 
   def blit(self):
     for tile in self.tiles:
       tile.blit()
     for team in self.teams:
-      team.blit()
+        team.blit()
+
+    if self.state == self.IDLE:
+      glsetup.blitSetup()
+      self.logoSprites.blit(95, 225)
+      self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92))
+      self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92), True)
+    elif self.state == self.JOINING:
+      self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92))
+      self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92), True)
+      self.blitText(str((600-self.counter)//60), (130,60))
+      self.blitText(str((600-self.counter)//60), (130,60), True)
+    elif self.state == self.GAMEPLAY:
+      pass
+    elif self.state == self.DONE:
+      self.blitText("GAME OVER"[:self.counter//2], (100,108))
+      self.blitText("GAME OVER"[:self.counter//2], (100,108), True)
+
     for ball in self.balls:
       ball.blit()
+    # blit dragon
+
+  def blitText(self, text, pos, flipped=False):
+    for i,char in enumerate(text):
+      o = ord(char)
+      if flipped:
+        x = (256-pos[0]) - 8*i
+        y = 240-pos[1]
+      else:
+        x = pos[0] + 8*i
+        y = pos[1]
+      img = None
+      if ord("A") <= o <= ord("Z"):
+        img = (self.charSpritesFlipped if flipped else self.charSprites)[o-ord("A")]
+      elif ord("0") <= o <= ord("9"):
+        img = (self.numbSpritesFlipped if flipped else self.numbSprites)[o-ord("0")]
+      if img:
+        glsetup.blitSetup()
+        img.blit(x,y)
+
+  def stateTransition(self, newState):
+    if newState == self.IDLE:
+      self.counter = 0
+      self.resetPhysics()
+
+    elif newState == self.JOINING:
+      self.counter = 0
+
+    elif newState == self.GAMEPLAY:
+      self.counter = 0
+      self.playerMode = 4
+      for i,team in enumerate(self.teams):
+        if team.isDead():
+          self.birthTeam(i)
+          self.playerMode -= 1
+      self.addBall((124, 116), pymunk.vec2d.Vec2d(-200, -200))
+
+    elif newState == self.DONE:
+      self.counter = 0
+      self.clearBalls()
+
+    self.state = newState
 
   def populateTiles(self):
     tileList = (
@@ -114,18 +228,7 @@ class Game:
   def populateTeams(self):
     self.teams = []
     for i in range(4):
-      shieldBody = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
-      shape = pymunk.Poly(shieldBody, ((-4,4),(4,4),(4,-4),(-4,-4)))
-      shape.elasticity = BOUNCE_ELASTICITY
-      # shape.collision_type = self.SHIELD_COLLISION
-      self.space.add(shieldBody, shape)
-      homeBody = pymunk.Body(body_type=pymunk.Body.STATIC)
-      homeBody.position = ((24,24), (232,24), (232,216), (24,216))[i]
-      shape = pymunk.Poly(homeBody, ((-24,-24),(24,-24),(24,24),(-24,24)))
-      shape.elasticity = BOUNCE_ELASTICITY
-      shape.collision_type = self.HOME_COLLISION
-      self.space.add(homeBody, shape)
-      self.teams.append(Team(i, self.tileSprites, self.homeSprites, shieldBody, homeBody))
+      self.teams.append(Team(i, self.tileSprites, self.homeSprites))
 
   def addBall(self, pos, vel):
     ball = pymunk.Body(10,100)
@@ -137,6 +240,23 @@ class Game:
     shape.collision_type = self.BALL_COLLISION
     self.space.add(ball, shape)
     self.balls.append(Ball(self.ballSprites, ball))
+
+  def clearBalls(self):
+    for ball in self.balls:
+      self.space.remove(ball.body)
+      self.space.remove(*(x for x in ball.body.shapes))
+    self.balls = []
+
+  def clearTiles(self):
+    for tile in self.tiles:
+      self.space.remove(tile.body)
+      self.space.remove(*(x for x in tile.body.shapes))
+    self.tiles = []
+
+  def clearTeams(self):
+    for i,team in enumerate(self.teams):
+      if not team.isDead():
+        self.killTeam(i, peaceful=True)
 
   def breakTile(self, arbiter, space, data):
     _,targetShape = arbiter.shapes
@@ -155,9 +275,30 @@ class Game:
     targetBody = targetShape.body
     for i,team in enumerate(self.teams):
       if team.homeBody == targetBody:
-        self.space.remove(targetShape, targetBody, team.shieldBody)
-        self.space.remove(*(x for x in team.shieldBody.shapes))
         self.addBall(ball.body.position, ball.body.velocity)
-        team.kill()
+        self.killTeam(i)
         break
     return True
+
+  def killTeam(self, i, peaceful=False):
+    team = self.teams[i]
+    self.space.remove(team.homeBody, team.shieldBody)
+    self.space.remove(*(x for x in team.homeBody.shapes))
+    self.space.remove(*(x for x in team.shieldBody.shapes))
+    team.die(peaceful=peaceful)
+
+  def birthTeam(self, i):
+    shieldBody = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
+    shape = pymunk.Poly(shieldBody, ((-4,4),(4,4),(4,-4),(-4,-4)))
+    shape.elasticity = BOUNCE_ELASTICITY
+    # shape.collision_type = self.SHIELD_COLLISION
+    self.space.add(shieldBody, shape)
+    homeBody = pymunk.Body(body_type=pymunk.Body.STATIC)
+    homeBody.position = ((24,24), (232,24), (232,216), (24,216))[i]
+    shape = pymunk.Poly(homeBody, ((-24,-24),(24,-24),(24,24),(-24,24)))
+    shape.elasticity = BOUNCE_ELASTICITY
+    shape.collision_type = self.HOME_COLLISION
+    self.space.add(homeBody, shape)
+    self.teams[i].homeBody = homeBody
+    self.teams[i].shieldBody = shieldBody
+    self.teams[i].birth()

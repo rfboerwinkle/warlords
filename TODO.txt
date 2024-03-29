@@ -1,0 +1,15 @@
+holding onto the ball
+dragon
+ai
+sound effects
+
+fix speed
+last man standing blinks until new game start if it's human
+pre-game start screen
+points
+high scores
+game modes
+"GAME OVER" text real length
+better tiny balls (textures might be flipped wrong)
+good fireball accent colors
+maybe fix fireball tail[0]

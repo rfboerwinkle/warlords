@@ -23,9 +23,17 @@ x = realDims[0]/idealDims[0]
 y = realDims[1]/idealDims[1]
 scale = min(x, y)
 glScalef(scale, scale, 1)
+Blinders = []
 if scale == x:
+  # untested
+  h = realDims[1]/scale-idealDims[1]
+  Blinders.append(pyglet.shapes.Rectangle(0, -h, idealDims[0], h, color=(0,0,0)))
+  Blinders.append(pyglet.shapes.Rectangle(0, idealDims[1], idealDims[0], h, color=(0,0,0)))
   glTranslatef(0, (realDims[1]-(idealDims[1]*scale))/(2*scale), 0)
 else:
+  w = realDims[0]/scale-idealDims[0]
+  Blinders.append(pyglet.shapes.Rectangle(-w, 0, w, idealDims[1], color=(0,0,0)))
+  Blinders.append(pyglet.shapes.Rectangle(idealDims[0], 0, w, idealDims[1], color=(0,0,0)))
   glTranslatef((realDims[0]-(idealDims[0]*scale))/(2*scale), 0, 0)
 # pyglet.options["vsync"] = None
 
@@ -33,8 +41,10 @@ ASSETS = os.path.join(os.path.dirname(__file__), "assets")
 HOME_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "HomeSprites.png"))
 TILE_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "TileSprites.png"))
 BALL_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "BallSprites.png"))
+LOGO_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "LogoSprites.png"))
+CHAR_SPRITE_SHEET = pyglet.image.load(os.path.join(ASSETS, "CharSprites.png"))
 
-TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET)
+TheGame = Game(TILE_SPRITE_SHEET, HOME_SPRITE_SHEET, BALL_SPRITE_SHEET, LOGO_SPRITE_SHEET, CHAR_SPRITE_SHEET)
 
 joysticks = pyglet.input.get_joysticks()
 # for i,joystick in enumerate(joysticks[:2]):
@@ -45,21 +55,19 @@ joysticks = pyglet.input.get_joysticks()
 if len(joysticks) >= 1:
   joysticks[0].open()
   TheGame.teams[0].joystick = joysticks[0]
-  TheGame.teams[0].ai = False
   TheGame.teams[1].joystick = joysticks[0]
-  TheGame.teams[1].ai = False
 if len(joysticks) >= 2:
   joysticks[1].open()
   TheGame.teams[2].joystick = joysticks[1]
-  TheGame.teams[2].ai = False
   TheGame.teams[3].joystick = joysticks[1]
-  TheGame.teams[3].ai = False
 
 @Window.event
 def on_draw():
-  global TheGame
+  global TheGame, Blinders
   Window.clear()
   TheGame.blit()
+  for rect in Blinders:
+    rect.draw()
 
 pyglet.clock.schedule(TheGame.step)
 pyglet.app.run()

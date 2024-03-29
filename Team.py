@@ -3,13 +3,13 @@ import pymunk
 import glsetup
 
 class Team:
-  def __init__(self, teamIndex, tileSprites, homeSprites, shieldBody, homeBody):
-    self.deadCounter = -1
+  def __init__(self, teamIndex, tileSprites, homeSprites):
+    self.deadCounter = 24*4 + 1
     self.teamIndex = teamIndex
     self.ai = True
 
-    self.shieldBody = shieldBody
-    self.homeBody = homeBody
+    self.shieldBody = None
+    self.homeBody = None
 
     self.joystick = None
     self.shieldPressed = False
@@ -93,10 +93,10 @@ class Team:
       return (self.leftX + (self.rightX-self.leftX)*(1+self.shieldAngle), self.leftY)
 
   def step(self, dt):
-    self.updateControls()
-    self.shieldBody.position = self.getShield()
-
-    if self.deadCounter != -1 and self.deadCounter != 24*4+1:
+    if self.deadCounter == -1:
+      self.updateControls()
+      self.shieldBody.position = self.getShield()
+    elif self.deadCounter != 24*4 + 1:
       self.deadCounter += 1
 
   def blit(self):
@@ -129,5 +129,16 @@ class Team:
         glsetup.blitSetup()
         self.explodePics[explodeFrame].blit(self.homeX, self.homeY)
 
-  def kill(self): # real
-    self.deadCounter = 0
+  def die(self, peaceful = False): # real
+    self.homeBody = None
+    self.shieldBody = None
+    if peaceful:
+      self.deadCounter = 24*4 + 1
+    else:
+      self.deadCounter = 0
+
+  def birth(self): # realer
+    self.deadCounter = -1
+
+  def isDead(self):
+    return self.deadCounter != -1
