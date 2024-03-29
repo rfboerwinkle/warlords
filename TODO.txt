@@ -14,3 +14,4 @@ game modes
 better tiny balls (textures might be flipped wrong)
 good fireball accent colors
 maybe fix fireball tail[0]
+make readme
