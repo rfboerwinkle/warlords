@@ -240,6 +240,7 @@ class Game:
       self.teams.append(Team(i, self.tileSprites, self.homeSprites))
 
   def addBall(self, pos, vel):
+    self.sounds["slide"].play()
     ball = pymunk.Body(10,100)
     ball.position = pos
     ball.velocity = vel
@@ -248,7 +249,7 @@ class Game:
     shape.elasticity = 1
     shape.collision_type = self.BALL_COLLISION
     self.space.add(ball, shape)
-    self.balls.append(Ball(self.ballSprites, ball))
+    self.balls.append(Ball(self.ballSprites, self.sounds, ball))
 
   def clearBalls(self):
     for ball in self.balls:
@@ -297,6 +298,7 @@ class Game:
     return True
 
   def shieldCollide(self, arbiter, space, data):
+    self.sounds["boom"].play()
     targetBall, targetShape = arbiter.shapes
     for ball in self.balls:
       if ball.body == targetBall.body:

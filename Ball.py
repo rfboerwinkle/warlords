@@ -21,10 +21,11 @@ class Ball:
     (-120, False, True, 90, 0),
   )
 
-  def __init__(self, ballSprites, body):
+  def __init__(self, ballSprites, sounds, body):
     self.body = body
     # ball switches every 4 frames
     self.ballPics = tuple(ballSprites.get_region(0, i*8, 8, 8) for i in range(4))
+    self.releaseSound = sounds["slide"]
     for pic in self.ballPics:
       pic.anchor_x = 4
       pic.anchor_y = 4
@@ -94,6 +95,7 @@ class Ball:
     space.remove(*(x for x in self.body.shapes))
 
   def getReleased(self):
+    self.releaseSound.play()
     self.grabbed[1].add(self.body)
     self.grabbed[1].add(*(x for x in self.grabbed[2]))
     if self.grabbed[0].teamIndex == 0:
