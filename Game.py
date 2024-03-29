@@ -257,6 +257,7 @@ class Game:
     for i,team in enumerate(self.teams):
       if not team.isDead():
         self.killTeam(i, peaceful=True)
+        team.ai = True
 
   def breakTile(self, arbiter, space, data):
     _,targetShape = arbiter.shapes

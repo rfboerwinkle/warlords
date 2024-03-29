@@ -18,12 +18,8 @@ class Ball:
     (-60, True, True, -90, 0),
     (-150, True, True, 0, 0),
     (-135, True, True, 0, 1),
-    (-120, False, True, 90, 0), # mode -90
+    (-120, False, True, 90, 0),
   )
-
-  # ANGLE = ANGLE + tuple((180-x[0], not x[1], x[2], x[3], x[4]) for x in ANGLE)
-  # ANGLE = ANGLE + tuple((-x[0], x[1], not x[2], x[3], x[4]) for x in ANGLE)
-  print(ANGLE)
 
   def __init__(self, ballSprites, body):
     self.body = body
@@ -53,7 +49,6 @@ class Ball:
     target = self.body.velocity.angle_degrees
     for angle in self.ANGLE:
       if abs(angle[0]-target) <= 7.5:
-        print(target, angle[0])
         glsetup.blitSetup()
         self.tailPics[angle[4]][self.cycle//8].get_texture().get_transform(angle[1],angle[2],angle[3]).blit(self.body.position[0], self.body.position[1])
         break
