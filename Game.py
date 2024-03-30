@@ -149,7 +149,10 @@ class Game:
       self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92))
       self.blitText("PRESS PLAYER START"[:(self.counter%128)//2], (60,92), True)
       if (600-self.counter)%60 == 0:
-        self.sounds["boom"].play()
+        try:
+          self.sounds["boom"].play()
+        except:
+          pass
       self.blitText(str((600-self.counter)//60), (130,60))
       self.blitText(str((600-self.counter)//60), (130,60), True)
     elif self.state == self.GAMEPLAY:
@@ -240,7 +243,10 @@ class Game:
       self.teams.append(Team(i, self.tileSprites, self.homeSprites))
 
   def addBall(self, pos, vel):
-    self.sounds["slide"].play()
+    try:
+      self.sounds["slide"].play()
+    except:
+      pass
     ball = pymunk.Body(10,100)
     ball.position = pos
     ball.velocity = vel
@@ -267,10 +273,13 @@ class Game:
     for i,team in enumerate(self.teams):
       if not team.isDead():
         self.killTeam(i, peaceful=True)
-        team.ai = True
+      team.ai = True
 
   def breakTile(self, arbiter, space, data):
-    self.sounds["triangle"].play()
+    try:
+      self.sounds["triangle"].play()
+    except:
+      pass
     targetBall,targetShape = arbiter.shapes
     for ball in self.balls:
       if ball.body == targetBall.body:
@@ -284,7 +293,10 @@ class Game:
         break
 
   def breakHome(self, arbiter, space, data):
-    self.sounds["explosion"].play()
+    try:
+      self.sounds["explosion"].play()
+    except:
+      pass
     targetBall,targetShape = arbiter.shapes
     for ball in self.balls:
       if ball.body == targetBall.body:
@@ -298,7 +310,10 @@ class Game:
     return True
 
   def shieldCollide(self, arbiter, space, data):
-    self.sounds["boom"].play()
+    try:
+      self.sounds["boom"].play()
+    except:
+      pass
     targetBall, targetShape = arbiter.shapes
     for ball in self.balls:
       if ball.body == targetBall.body:
@@ -306,7 +321,8 @@ class Game:
     targetBody = targetShape.body
     for team in self.teams:
       if team.shieldBody == targetBody:
-        if team.shieldPressed:
+        if team.shieldPressed and not team.grabbing:
+          team.grabbing = True
           ball.getGrabbed(team, self.space)
           return False
         break

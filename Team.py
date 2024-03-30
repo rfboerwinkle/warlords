@@ -11,6 +11,7 @@ class Team:
     self.shieldBody = None
     self.homeBody = None
 
+    self.grabbing = False
     self.joystick = None
     self.shieldPressed = False
     self.shieldAngle = 0
@@ -69,11 +70,15 @@ class Team:
     angle = 0
     pressed = False
     if self.joystick:
-      angle = self.joystick.x if self.teamIndex%2 else self.joystick.y
+      angle = self.joystick.x if self.teamIndex%2 else -self.joystick.y
       pressed = self.joystick.buttons[0] if self.teamIndex%2 else self.joystick.buttons[1]
     return angle,pressed
 
   def updateControls(self):
+    if self.isDead():
+      self.shieldAngle = 0
+      self.shieldPressed = False
+      return
     self.shieldAngle, self.shieldPressed = self.rawControls()
     if self.ai:
       # idk, do something
@@ -132,6 +137,7 @@ class Team:
   def die(self, peaceful = False): # real
     self.homeBody = None
     self.shieldBody = None
+    self.grabbing = False
     if peaceful:
       self.deadCounter = 24*4 + 1
     else:

@@ -95,7 +95,10 @@ class Ball:
     space.remove(*(x for x in self.body.shapes))
 
   def getReleased(self):
-    self.releaseSound.play()
+    try:
+      self.releaseSound.play()
+    except:
+      pass
     self.grabbed[1].add(self.body)
     self.grabbed[1].add(*(x for x in self.grabbed[2]))
     if self.grabbed[0].teamIndex == 0:
@@ -107,4 +110,5 @@ class Ball:
     elif self.grabbed[0].teamIndex == 3:
       v = pymunk.vec2d.Vec2d(self.body.position[0], self.body.position[1]-240)
     self.body.velocity = v*1000 # this will be normalized in the step, dw bbg
+    self.grabbed[0].grabbing = False
     self.grabbed = None
