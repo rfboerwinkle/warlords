@@ -150,7 +150,7 @@ class Game:
         elif playersLeft == 1 and aisLeft == 0:
           self.stateTransition(self.DONE)
     elif self.state == self.DONE:
-      if self.counter > 256:
+      if self.counter > 60*5:
         self.stateTransition(self.IDLE)
     self.space.step(dt)
 
@@ -185,8 +185,8 @@ class Game:
     elif self.state == self.GAMEPLAY:
       pass
     elif self.state == self.DONE:
-      self.blitText("GAME OVER"[:self.counter//2], (100,108))
-      self.blitText("GAME OVER"[:self.counter//2], (100,108), True)
+      self.blitText(" MAKE ORIGAMI OF SOMETHING AND  ", (0,112))
+      self.blitText(" SEND A PICTURE TO TEAM DISCORD ", (0,104))
 
     for ball in self.balls:
       ball.blit()
