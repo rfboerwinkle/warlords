@@ -63,11 +63,14 @@ class Ball:
     self.cycle += 1
     self.cycle %= 16
     if self.grabbed != None:
-      self.body.position = self.grabbed[0].shieldBody.position
-      if self.grabbed[0].shieldPressed == False:
+      toReturn = True
+      if self.grabbed[0].shieldBody == None or self.grabbed[0].shieldPressed == False:
+        toReturn = False
         self.getReleased()
-      else:
+      if toReturn:
+        self.body.position = self.grabbed[0].shieldBody.position
         return
+
     if self.body.velocity.get_length_sqrd() < 5000:
       self.body.velocity = self.body.velocity.scale_to_length(70.71067811865476)
 

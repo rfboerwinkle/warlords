@@ -289,8 +289,9 @@ class Game:
 
   def clearBalls(self):
     for ball in self.balls:
-      self.space.remove(ball.body)
-      self.space.remove(*(x for x in ball.body.shapes))
+      if ball.grabbed == None:
+        self.space.remove(ball.body)
+        self.space.remove(*(x for x in ball.body.shapes))
     self.balls = []
 
   def clearTiles(self):
