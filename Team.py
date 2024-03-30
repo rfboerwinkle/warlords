@@ -1,12 +1,17 @@
+import math
+
 import pyglet
 import pymunk
+
 import glsetup
 
 class Team:
-  def __init__(self, teamIndex, tileSprites, homeSprites):
+  def __init__(self, teamIndex, tileSprites, homeSprites, game):
     self.deadCounter = 24*4 + 1
     self.teamIndex = teamIndex
     self.ai = True
+
+    self.game = game
 
     self.shieldBody = None
     self.homeBody = None
@@ -79,11 +84,28 @@ class Team:
       self.shieldAngle = 0
       self.shieldPressed = False
       return
-    self.shieldAngle, self.shieldPressed = self.rawControls()
+
     if self.ai:
-      # idk, do something
-      self.shieldAngle = 0.5
       self.shieldPressed = False
+      origin = ((0,0), (256,0), (256,240), (0,240))[self.teamIndex]
+      goal = 0
+      minDistance = 1000000
+      for ball in self.game.balls:
+        pos = ball.body.position
+        dist = (pos[0]-origin[0])**2 + (pos[0]-origin[0])**2
+        if dist < minDistance:
+          minDistance = dist
+          goal = math.atan2(ball.body.position[1]-origin[1], ball.body.position[0]-origin[0])
+      angleConvert = ((math.pi/2,0), (math.pi/2, math.pi), (-math.pi/2, -math.pi), (-math.pi/2, 0))[self.teamIndex]
+      goal = ((goal-angleConvert[0])/(angleConvert[1]-angleConvert[0]))*2-1
+      goal = goal-self.shieldAngle
+      if goal > 0.05:
+        self.shieldAngle += 0.01
+      elif goal < -0.05:
+        self.shieldAngle -= 0.01
+
+    else:
+      self.shieldAngle, self.shieldPressed = self.rawControls()
 
   # Returns the angle of the shield
   # True: vertical or "right"

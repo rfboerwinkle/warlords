@@ -1,7 +1,10 @@
+import math
+import random
+
 import pyglet
 import pymunk
-import glsetup
 
+import glsetup
 from Team import *
 from Tile import *
 from Ball import *
@@ -18,6 +21,7 @@ class Game:
   SHIELD_COLLISION = 4
 
   IDLE = "idle"
+  ONE_PERSON = "one person"
   JOINING = "joining"
   GAMEPLAY = "gameplay"
   DONE = "done"
@@ -95,15 +99,31 @@ class Game:
     for ball in self.balls:
       ball.step(dt)
 
-    if self.state == self.IDLE or self.state == self.JOINING:
+    if self.state == self.IDLE:
+      for i,team in enumerate(self.teams):
+        if team.rawControls()[1] and team.ai:
+          team.ai = False
+          self.birthTeam(i)
+          self.stateTransition(self.ONE_PERSON)
+          break # ik, ik, if they are pressed on the same frame it doesn't work... suck it
+    elif self.state == self.ONE_PERSON:
       for i,team in enumerate(self.teams):
         if team.rawControls()[1] and team.ai:
           team.ai = False
           self.birthTeam(i)
           self.stateTransition(self.JOINING)
+          break # ik, ik, if they are pressed on the same frame it doesn't work... suck it
+    elif self.state == self.JOINING:
+      for i,team in enumerate(self.teams):
+        if team.rawControls()[1] and team.ai:
+          team.ai = False
+          self.birthTeam(i)
+          break # ik, ik, if they are pressed on the same frame it doesn't work... suck it
 
     self.counter += 1
     if self.state == self.IDLE:
+      self.counter %= 128
+    elif self.state == self.ONE_PERSON:
       self.counter %= 128
     elif self.state == self.JOINING:
       if self.counter >= 10*60:
@@ -112,7 +132,7 @@ class Game:
       if self.counter > 60*60:
         self.counter = 0
         # this will be normalized to the minimum speed
-        self.addBall((128, 120), pymunk.vec2d.Vec2d(-1, -1))
+        self.addBall((128, 120), random.uniform(-math.pi, math.pi), 1)
       playersLeft = 0
       aisLeft = 0
       for team in self.teams:
@@ -142,7 +162,14 @@ class Game:
 
     if self.state == self.IDLE:
       glsetup.blitSetup()
-      self.logoSprites.blit(95, 225)
+      self.logoSprites.blit(95, 224)
+      self.blitText("WARLORDS"[:self.counter//2], (100,100))
+      self.blitText("WARLORDS"[:self.counter//2], (100,100), True)
+      self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92))
+      self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92), True)
+    elif self.state == self.ONE_PERSON:
+      self.blitText("MINIMUM OF TWO PLAYERS"[:self.counter//2], (44,100))
+      self.blitText("MINIMUM OF TWO PLAYERS"[:self.counter//2], (44,100), True)
       self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92))
       self.blitText("PRESS PLAYER START"[:self.counter//2], (60,92), True)
     elif self.state == self.JOINING:
@@ -188,6 +215,9 @@ class Game:
       self.counter = 0
       self.resetPhysics()
 
+    elif newState == self.ONE_PERSON:
+      self.counter = 0
+
     elif newState == self.JOINING:
       self.counter = 0
 
@@ -198,7 +228,7 @@ class Game:
         if team.isDead():
           self.birthTeam(i)
           self.playerMode -= 1
-      self.addBall((124, 116), pymunk.vec2d.Vec2d(-200, -200))
+      self.addBall((124, 116), random.uniform(-math.pi, math.pi), 200)
 
     elif newState == self.DONE:
       self.sounds["fanfare"].play()
@@ -240,16 +270,16 @@ class Game:
   def populateTeams(self):
     self.teams = []
     for i in range(4):
-      self.teams.append(Team(i, self.tileSprites, self.homeSprites))
+      self.teams.append(Team(i, self.tileSprites, self.homeSprites, self))
 
-  def addBall(self, pos, vel):
+  def addBall(self, pos, angle, mag):
     try:
       self.sounds["slide"].play()
     except:
       pass
     ball = pymunk.Body(10,100)
     ball.position = pos
-    ball.velocity = vel
+    ball.velocity = pymunk.vec2d.Vec2d(math.cos(angle)*mag, math.sin(angle)*mag)
     shape = pymunk.Circle(ball, 4, (0,0))
     shape.friction = 0.0
     shape.elasticity = 1
@@ -304,7 +334,7 @@ class Game:
     targetBody = targetShape.body
     for i,team in enumerate(self.teams):
       if team.homeBody == targetBody:
-        self.addBall(ball.body.position, ball.body.velocity)
+        self.addBall(ball.body.position, ball.body.velocity.angle, ball.body.velocity.length)
         self.killTeam(i)
         break
     return True
