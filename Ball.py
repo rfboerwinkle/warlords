@@ -101,14 +101,8 @@ class Ball:
       pass
     self.grabbed[1].add(self.body)
     self.grabbed[1].add(*(x for x in self.grabbed[2]))
-    if self.grabbed[0].teamIndex == 0:
-      v = pymunk.vec2d.Vec2d(self.body.position[0], self.body.position[1])
-    elif self.grabbed[0].teamIndex == 1:
-      v = pymunk.vec2d.Vec2d(self.body.position[0]-256, self.body.position[1])
-    elif self.grabbed[0].teamIndex == 2:
-      v = pymunk.vec2d.Vec2d(self.body.position[0]-256, self.body.position[1]-240)
-    elif self.grabbed[0].teamIndex == 3:
-      v = pymunk.vec2d.Vec2d(self.body.position[0], self.body.position[1]-240)
+    origin = ((0,0), (256,0), (256,240), (0,240))[self.grabbed[0].teamIndex]
+    v = pymunk.vec2d.Vec2d(self.body.position[0]-origin[0], self.body.position[1]-origin[1])
     self.body.velocity = v*1000 # this will be normalized in the step, dw bbg
     self.grabbed[0].grabbing = False
     self.grabbed = None

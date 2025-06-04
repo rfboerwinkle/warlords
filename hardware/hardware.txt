@@ -1,0 +1,23 @@
+Ultimately, I followed this:
+https://retropie.org.uk/forum/topic/12972/ultimarc-a-pac-with-5k-potentiometers/25
+
+================================================================================
+
+Here is my bill of materials:
+
+Ultimarc A-PAC
+https://www.ultimarc.com/control-interfaces/a-pac/a-pac/
+(I got a fraud prevention call when I ordered from here, but it arrived!)
+
+5K ohm potentiometer (x4)
+https://www.amazon.com/Molence-RV24YN20S-Single-Potentiometer-Control/dp/B08Z8BZFS1
+(NOTE: I got 5K ohm because that's what the guide said)
+
+Generic Items (I don't remember where they came from / they can be anything):
+push button (x4)
+some type of wire
+some solder
+
+================================================================================
+
+Pictures of the wiring + assembly are included in this directory.

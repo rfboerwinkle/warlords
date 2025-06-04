@@ -1,5 +1,6 @@
 import pyglet
 import pymunk
+
 import glsetup
 
 class Tile:
